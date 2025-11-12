@@ -1,41 +1,201 @@
-// Chargement des composants
-function loadComponents() {
-    // Charger le header
-    fetch('components/header.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('header-container').innerHTML = data;
-            initHeader();
-        })
-        .catch(error => console.error('Erreur chargement header:', error));
+/* script.js - Kolonga Digital Africa
+   Version: 1.0.0
+   Objectifs:
+   - Menu mobile déroulant du haut vers le bas avec overlay et blocage du scroll
+   - Loader (logo + spinner)
+   - Chargement header/footer via fetch (avec cache localStorage)
+   - Lazy loading, IntersectionObserver animations, compteurs
+   - Hero slider optimisé
+   - Accessibilité (ARIA), throttling scroll, divers fix
+*/
 
-    // Charger le footer
-    fetch('components/footer.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('footer-container').innerHTML = data;
-            initFooter();
-        })
-        .catch(error => console.error('Erreur chargement footer:', error));
+/* ===========================
+   Configuration & Helpers
+   =========================== */
+const CONFIG = {
+    slideDuration: 6000,
+    throttleDelay: 100, // ms pour scroll throttle
+    loaderMinMs: 800, // temps min du loader
+    headerCacheKey: 'kolonga_header_html_v1',
+    footerCacheKey: 'kolonga_footer_html_v1',
+};
+
+const qs = (sel, ctx = document) => ctx.querySelector(sel);
+const qsa = (sel, ctx = document) => Array.from((ctx || document).querySelectorAll(sel));
+const safeSetHTML = (el, html) => { if (el) el.innerHTML = html; };
+
+/* ===========================
+   Utility: Throttle
+   =========================== */
+function throttle(fn, wait = 100) {
+    let last = 0;
+    let timeout = null;
+    return function (...args) {
+        const now = Date.now();
+        const remaining = wait - (now - last);
+        if (remaining <= 0) {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            last = now;
+            fn.apply(this, args);
+        } else if (!timeout) {
+            timeout = setTimeout(() => {
+                last = Date.now();
+                timeout = null;
+                fn.apply(this, args);
+            }, remaining);
+        }
+    };
 }
 
-// Initialiser le header après chargement
-function initHeader() {
-    const header = document.getElementById('header');
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const nav = document.querySelector('nav ul');
-    const navLinks = document.querySelectorAll('nav ul li a');
+/* ===========================
+   Loader
+   =========================== */
+function showLoader() {
+    // Create loader only if not present
+    if (qs('.page-loader')) return;
+    const loader = document.createElement('div');
+    loader.className = 'page-loader';
+    loader.setAttribute('role', 'status');
+    loader.setAttribute('aria-live', 'polite');
+    loader.innerHTML = `
+        <div class="loader-content" aria-hidden="false">
+            <div class="loader-logo">
+                <img src="images/logo/logo.png" alt="Kolonga Digital Africa" onerror="this.src='images/placeholder.jpg'">
+            </div>
+            <div class="loader-spinner" aria-hidden="true"></div>
+        </div>
+    `;
+    document.documentElement.style.overflow = 'hidden'; // block scroll while loader visible
+    document.body.appendChild(loader);
 
-    // Header scroll effect avec parallaxe
-    let lastScrollY = window.scrollY;
-    window.addEventListener('scroll', function() {
-        const currentScrollY = window.scrollY;
-        
-        // Effet de réduction du header au scroll
+    // Ensure loader stays visible at least CONFIG.loaderMinMs ms
+    const start = Date.now();
+    window.addEventListener('load', () => {
+        const elapsed = Date.now() - start;
+        const remaining = Math.max(0, CONFIG.loaderMinMs - elapsed);
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+                document.documentElement.style.overflow = ''; // restore scroll
+            }, 400);
+        }, remaining);
+    });
+}
+
+/* ===========================
+   Components loader (header/footer) with caching
+   =========================== */
+async function fetchWithCache(url, cacheKey) {
+    try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) return cached;
+    } catch (e) {
+        // localStorage could be disabled - proceed to fetch
+    }
+
+    const resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error(`Fetch failed: ${url}`);
+    const text = await resp.text();
+    try {
+        localStorage.setItem(cacheKey, text);
+    } catch (e) {
+        // ignore storage errors
+    }
+    return text;
+}
+
+function loadComponents() {
+    // Header
+    const headerContainer = qs('#header-container') || qs('#header') || null;
+    if (headerContainer) {
+        fetchWithCache('components/header.html', CONFIG.headerCacheKey)
+            .then(html => {
+                safeSetHTML(headerContainer, html);
+                // if header is inserted into #header-container but the main page expects #header id, try to normalise
+                const loadedHeader = headerContainer.querySelector('header') || headerContainer;
+                if (!loadedHeader.id && headerContainer.id === 'header-container') {
+                    loadedHeader.id = 'header';
+                }
+                initHeader();
+            })
+            .catch(err => {
+                console.error('Erreur chargement header:', err);
+                initHeader(); // attempt init anyway (defensive)
+            });
+    } else {
+        console.warn('Aucun header-container trouvé. initHeader sera appelé sur le header existant.');
+        initHeader();
+    }
+
+    // Footer
+    const footerContainer = qs('#footer-container') || qs('footer') || null;
+    if (footerContainer) {
+        fetchWithCache('components/footer.html', CONFIG.footerCacheKey)
+            .then(html => {
+                safeSetHTML(footerContainer, html);
+                initFooter();
+            })
+            .catch(err => {
+                console.error('Erreur chargement footer:', err);
+                initFooter();
+            });
+    } else {
+        console.warn('Aucun footer-container trouvé. initFooter sera appelé sur le footer existant.');
+        initFooter();
+    }
+}
+
+/* ===========================
+   Header & Mobile Menu
+   - Mobile menu drops down from header (vertical)
+   - Overlay created to dim background and trap focus
+   - Body scroll locked while menu open
+   =========================== */
+function initHeader() {
+    const header = qs('#header') || qs('header');
+    if (!header) return;
+
+    // Ensure there is a nav ul to adapt
+    let nav = qs('nav ul');
+    // If nav not inside header, try to find inside header specifically
+    if (!nav && header) nav = header.querySelector('nav ul');
+
+    const mobileMenuBtn = qs('.mobile-menu-btn') || null;
+    const navLinks = nav ? Array.from(nav.querySelectorAll('a')) : [];
+
+    // Create overlay for mobile menu if not exists
+    let overlay = qs('#mobile-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'mobile-overlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);opacity:0;visibility:hidden;transition:opacity .25s ease;z-index:999;';
+        document.body.appendChild(overlay);
+    }
+
+    // Create mobile menu container if nav exists and is not already configured
+    if (nav) {
+        nav.classList.remove('nav-expanded', 'mobile-nav-active'); // clean previous states
+        // set ARIA roles
+        nav.setAttribute('role', 'navigation');
+        nav.setAttribute('aria-hidden', 'true');
+        // style prepared for dropdown: we'll control maxHeight for transition
+        nav.style.transition = 'max-height 0.32s ease, opacity 0.32s ease';
+        nav.style.overflow = 'hidden';
+        nav.style.maxHeight = '0';
+        nav.style.opacity = '0';
+    }
+
+    // Header scroll effect (throttled)
+    let lastScrollY = window.scrollY || 0;
+    const handleScroll = () => {
+        const currentScrollY = window.scrollY || 0;
+
         if (currentScrollY > 50) {
             header.classList.add('scrolled');
-            
-            // Effet de disparition/apparition au scroll
             if (currentScrollY > lastScrollY && currentScrollY > 100) {
                 header.style.transform = 'translateY(-100%)';
             } else {
@@ -45,564 +205,557 @@ function initHeader() {
             header.classList.remove('scrolled');
             header.style.transform = 'translateY(0)';
         }
-        
         lastScrollY = currentScrollY;
-    });
+    };
+    window.removeEventListener('scroll', handleScroll); // defensive
+    window.addEventListener('scroll', throttle(handleScroll, CONFIG.throttleDelay));
 
-    // Mobile menu toggle amélioré
-    if (mobileMenuBtn && nav) {
-        mobileMenuBtn.addEventListener('click', function() {
-            const isExpanded = nav.classList.contains('nav-expanded');
-            
-            if (isExpanded) {
-                // Fermer le menu avec animation
-                nav.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    nav.classList.remove('nav-expanded');
-                    mobileMenuBtn.classList.remove('active');
-                }, 300);
-            } else {
-                // Ouvrir le menu avec animation
-                nav.classList.add('nav-expanded');
-                mobileMenuBtn.classList.add('active');
-                setTimeout(() => {
-                    nav.style.transform = 'translateX(0)';
-                }, 10);
-            }
+    // Mobile menu behaviour: dropdown from header
+    function openMobileMenu() {
+        if (!nav) return;
+        nav.classList.add('mobile-nav-active');
+        nav.setAttribute('aria-hidden', 'false');
+        mobileMenuBtn && mobileMenuBtn.setAttribute('aria-expanded', 'true');
+        // compute natural height
+        nav.style.maxHeight = nav.scrollHeight + 'px';
+        nav.style.opacity = '1';
+        // overlay
+        overlay.style.visibility = 'visible';
+        overlay.style.opacity = '1';
+        // lock body scroll
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+
+        // trap focus: move focus to first nav link
+        if (navLinks.length > 0) {
+            setTimeout(() => navLinks[0].focus(), 200);
+        }
+    }
+
+    function closeMobileMenu() {
+        if (!nav) return;
+        nav.style.maxHeight = '0';
+        nav.style.opacity = '0';
+        nav.setAttribute('aria-hidden', 'true');
+        nav.classList.remove('mobile-nav-active');
+        mobileMenuBtn && mobileMenuBtn.setAttribute('aria-expanded', 'false');
+
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.visibility = 'hidden';
+        }, 300);
+
+        // restore body scroll
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+        // return focus to menu button if present
+        mobileMenuBtn && setTimeout(() => mobileMenuBtn.focus(), 200);
+    }
+
+    // Toggle event for mobile button
+    if (mobileMenuBtn) {
+        // Ensure accessibility attributes
+        mobileMenuBtn.setAttribute('aria-controls', nav ? nav.id || 'main-nav' : 'main-nav');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        mobileMenuBtn.setAttribute('aria-label', 'Ouvrir le menu');
+
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = nav && nav.classList.contains('mobile-nav-active');
+            if (isOpen) closeMobileMenu();
+            else openMobileMenu();
         });
 
-        // Fermer le menu en cliquant sur un lien
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                nav.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    nav.classList.remove('nav-expanded');
-                    mobileMenuBtn.classList.remove('active');
-                }, 300);
-            });
-        });
-
-        // Fermer le menu en cliquant à l'extérieur
-        document.addEventListener('click', (e) => {
-            if (nav.classList.contains('nav-expanded') && 
-                !nav.contains(e.target) && 
-                !mobileMenuBtn.contains(e.target)) {
-                nav.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    nav.classList.remove('nav-expanded');
-                    mobileMenuBtn.classList.remove('active');
-                }, 300);
+        // allow Esc to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && nav && nav.classList.contains('mobile-nav-active')) {
+                closeMobileMenu();
             }
         });
     }
 
-    // Animation des liens de navigation au survol
+    // Close when clicking overlay
+    overlay.addEventListener('click', () => {
+        closeMobileMenu();
+    });
+
+    // Close when clicking a link (and navigate)
     navLinks.forEach(link => {
-        link.addEventListener('mouseenter', function() {
+        link.addEventListener('click', () => {
+            // allow normal navigation, but close menu
+            closeMobileMenu();
+        });
+
+        // small hover animation
+        link.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-2px)';
         });
-        
-        link.addEventListener('mouseleave', function() {
+        link.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0)';
         });
     });
 }
 
-// Initialiser le footer après chargement
+/* ===========================
+   Footer
+   =========================== */
 function initFooter() {
-    // Update year in footer
-    const footerBottom = document.querySelector('.footer-bottom p');
-    if (footerBottom) {
+    // update year
+    const footerBottomP = qs('.footer-bottom p') || qs('footer .footer-bottom p');
+    if (footerBottomP) {
         const currentYear = new Date().getFullYear();
-        footerBottom.innerHTML = `&copy; ${currentYear} Kolonga Digital Africa. Tous droits réservés.`;
+        footerBottomP.innerHTML = `&copy; ${currentYear} Kolonga Digital Africa. Tous droits réservés.`;
     }
 
-    // Newsletter form submission avec feedback visuel
-    const newsletterForm = document.querySelector('.newsletter-form');
+    // Newsletter submit handling
+    const newsletterForm = qs('.newsletter-form');
     if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function(e) {
+        // Ensure the input/button are present
+        const emailInput = newsletterForm.querySelector('input[type="email"]');
+        const submitBtn = newsletterForm.querySelector('button[type="submit"]');
+
+        newsletterForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const emailInput = this.querySelector('input[type="email"]');
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const email = emailInput.value;
-            
-            // Validation améliorée
+            if (!emailInput || !submitBtn) return;
+            const email = (emailInput.value || '').trim();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            
             if (email && emailRegex.test(email)) {
-                // Animation de succès
-                submitBtn.innerHTML = '<i class="fas fa-check"></i>';
+                // visual feedback
+                const original = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
                 submitBtn.style.backgroundColor = '#28a745';
-                
-                // Message temporaire
-                const originalText = submitBtn.innerHTML;
+                // fake send - TODO: replace by API call
+                console.log('Newsletter signup:', email);
+
                 setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
+                    submitBtn.innerHTML = original;
                     submitBtn.style.backgroundColor = '';
-                    this.reset();
-                }, 2000);
-                
-                // Simuler l'envoi (remplacer par votre API)
-                console.log('Email inscrit:', email);
+                    newsletterForm.reset();
+                    // show small transient message
+                    const msg = document.createElement('div');
+                    msg.className = 'newsletter-msg';
+                    msg.textContent = 'Merci — inscription réussie !';
+                    msg.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#222;color:#fff;padding:10px 14px;border-radius:8px;z-index:1200;';
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 2500);
+                }, 1000);
             } else {
-                // Animation d'erreur
+                // invalid
                 emailInput.style.borderColor = '#dc3545';
+                emailInput.focus();
                 setTimeout(() => {
                     emailInput.style.borderColor = '';
-                }, 2000);
+                }, 1600);
             }
         });
     }
 
-    // Animation des icônes sociales
-    const socialLinks = document.querySelectorAll('.social-links a');
-    socialLinks.forEach(link => {
-        link.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px) rotate(5deg)';
+    // Social icons tiny hover
+    qsa('.social-links a').forEach(a => {
+        a.addEventListener('mouseenter', () => {
+            a.style.transform = 'translateY(-5px) rotate(5deg)';
         });
-        
-        link.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) rotate(0)';
+        a.addEventListener('mouseleave', () => {
+            a.style.transform = 'translateY(0) rotate(0)';
         });
     });
 }
 
-// Fade-in animation on scroll améliorée
-const fadeElements = document.querySelectorAll('.fade-in');
+/* ===========================
+   Fade-in and IntersectionObserver logic
+   Centralized observer for sections and animated items
+   =========================== */
+const globalObserverOptions = { root: null, rootMargin: '0px', threshold: 0.25 };
+let globalObserver = null;
 
-const fadeInOnScroll = function() {
-    fadeElements.forEach(element => {
-        const elementTop = element.getBoundingClientRect().top;
-        const elementVisible = 100;
-        
-        if (elementTop < window.innerHeight - elementVisible) {
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
-            element.classList.add('visible');
-        }
-    });
-};
+function initGlobalObserver() {
+    if (globalObserver) return; // idempotent
+    globalObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            el.classList.add('section-visible');
+            // specific triggers
+            if (el.classList.contains('stats')) {
+                runCountersIn(el);
+            }
+            // reveal simple fade-in children
+            qsa('.fade-in', el).forEach((child, idx) => {
+                child.style.transitionDelay = (idx * 80) + 'ms';
+                child.classList.add('visible');
+            });
+            obs.unobserve(el);
+        });
+    }, globalObserverOptions);
+}
 
-// Counter animation for stats améliorée
-const animateCounters = function() {
-    const counters = document.querySelectorAll('.stat-number');
-    
+/* Animate counters inside a container (only once) */
+function runCountersIn(container) {
+    const counters = Array.from(container.querySelectorAll('.stat-number[data-target]'));
     counters.forEach(counter => {
-        const target = +counter.getAttribute('data-target');
-        const duration = 2000; // 2 secondes
-        const step = target / (duration / 16); // 60fps
-        let current = 0;
-        
-        const updateCounter = () => {
-            current += step;
-            if (current < target) {
-                counter.textContent = Math.floor(current);
-                requestAnimationFrame(updateCounter);
+        if (counter.dataset.animated === 'true') return;
+        const target = +counter.getAttribute('data-target') || 0;
+        const duration = 1400;
+        let start = null;
+        const step = (timestamp) => {
+            if (!start) start = timestamp;
+            const progress = Math.min((timestamp - start) / duration, 1);
+            counter.textContent = Math.floor(progress * target);
+            if (progress < 1) {
+                requestAnimationFrame(step);
             } else {
                 counter.textContent = target;
-                
-                // Ajouter un effet de pulse à la fin
-                counter.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    counter.style.transform = 'scale(1)';
-                }, 300);
+                // pulse effect
+                counter.style.transition = 'transform .18s ease';
+                counter.style.transform = 'scale(1.06)';
+                setTimeout(() => counter.style.transform = 'scale(1)', 260);
             }
         };
-        
-        updateCounter();
-    });
-};
-
-// Observer pour les animations
-const observerOptions = {
-    root: null,
-    threshold: 0.3,
-    rootMargin: '0px'
-};
-
-const observer = new IntersectionObserver(function(entries, observer) {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            if (entry.target.classList.contains('stats')) {
-                animateCounters();
-            }
-            
-            // Animation spécifique pour chaque section
-            entry.target.classList.add('section-visible');
-            
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
-
-// Observer toutes les sections principales
-document.querySelectorAll('section').forEach(section => {
-    observer.observe(section);
-});
-
-// Hero Slider Functionality améliorée
-class HeroSlider {
-    constructor() {
-        this.slides = document.querySelectorAll('.slide');
-        this.dots = document.querySelectorAll('.dot');
-        this.prevBtn = document.querySelector('.slider-prev');
-        this.nextBtn = document.querySelector('.slider-next');
-        this.currentSlide = 0;
-        this.slideInterval = null;
-        this.slideDuration = 6000; // Augmenté à 6 secondes
-        this.isAnimating = false;
-        
-        if (this.slides.length > 0) {
-            this.init();
-        }
-    }
-    
-    init() {
-        // Précharger les images pour un défilement plus fluide
-        this.preloadImages();
-        
-        this.startSlideShow();
-        this.addEventListeners();
-        this.addSlideProgress();
-    }
-    
-    preloadImages() {
-        this.slides.forEach(slide => {
-            const bgImage = slide.style.backgroundImage;
-            if (bgImage) {
-                const img = new Image();
-                img.src = bgImage.replace(/url\(['"]?(.*?)['"]?\)/, '$1');
-            }
-        });
-    }
-    
-    addEventListeners() {
-        // Navigation
-        if (this.prevBtn) {
-            this.prevBtn.addEventListener('click', () => this.navigate('prev'));
-        }
-        
-        if (this.nextBtn) {
-            this.nextBtn.addEventListener('click', () => this.navigate('next'));
-        }
-        
-        // Navigation par dots
-        this.dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => this.goToSlide(index));
-        });
-        
-        // Navigation au clavier
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') this.navigate('prev');
-            if (e.key === 'ArrowRight') this.navigate('next');
-        });
-        
-        // Pause au survol
-        const slider = document.querySelector('.hero-slider');
-        if (slider) {
-            slider.addEventListener('mouseenter', () => this.pauseSlideShow());
-            slider.addEventListener('mouseleave', () => this.startSlideShow());
-            
-            // Swipe sur mobile
-            this.addSwipeSupport(slider);
-        }
-    }
-    
-    addSwipeSupport(slider) {
-        let startX = 0;
-        let endX = 0;
-        
-        slider.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-        });
-        
-        slider.addEventListener('touchend', (e) => {
-            endX = e.changedTouches[0].clientX;
-            this.handleSwipe(startX, endX);
-        });
-    }
-    
-    handleSwipe(startX, endX) {
-        const swipeThreshold = 50;
-        const diff = startX - endX;
-        
-        if (Math.abs(diff) > swipeThreshold) {
-            if (diff > 0) {
-                this.navigate('next');
-            } else {
-                this.navigate('prev');
-            }
-        }
-    }
-    
-    navigate(direction) {
-        if (this.isAnimating) return;
-        
-        this.pauseSlideShow();
-        
-        if (direction === 'next') {
-            this.nextSlide();
-        } else {
-            this.prevSlide();
-        }
-        
-        this.startSlideShow();
-    }
-    
-    startSlideShow() {
-        this.slideInterval = setInterval(() => {
-            this.nextSlide();
-        }, this.slideDuration);
-        
-        this.startProgressAnimation();
-    }
-    
-    pauseSlideShow() {
-        clearInterval(this.slideInterval);
-        this.pauseProgressAnimation();
-    }
-    
-    nextSlide() {
-        this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-        this.updateSlides();
-    }
-    
-    prevSlide() {
-        this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
-        this.updateSlides();
-    }
-    
-    goToSlide(index) {
-        if (this.isAnimating || index === this.currentSlide) return;
-        
-        this.pauseSlideShow();
-        this.currentSlide = index;
-        this.updateSlides();
-        this.startSlideShow();
-    }
-    
-    updateSlides() {
-        this.isAnimating = true;
-        
-        // Animation de transition
-        this.slides.forEach((slide, index) => {
-            slide.style.transition = 'opacity 0.8s ease-in-out';
-            slide.classList.toggle('active', index === this.currentSlide);
-        });
-        
-        this.dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === this.currentSlide);
-        });
-        
-        // Réinitialiser et redémarrer la barre de progression
-        this.resetProgressAnimation();
-        this.startProgressAnimation();
-        
-        // Animation du texte
-        const currentSlideText = this.slides[this.currentSlide].querySelector('.hero-text');
-        if (currentSlideText) {
-            currentSlideText.style.animation = 'none';
-            setTimeout(() => {
-                currentSlideText.style.animation = 'slideInUp 0.8s ease-out';
-            }, 10);
-        }
-        
-        setTimeout(() => {
-            this.isAnimating = false;
-        }, 800);
-    }
-    
-    addSlideProgress() {
-        const progressBar = document.createElement('div');
-        progressBar.className = 'slide-progress';
-        progressBar.innerHTML = '<div class="slide-progress-bar"></div>';
-        document.querySelector('.slider-controls').appendChild(progressBar);
-    }
-    
-    startProgressAnimation() {
-        const progressBar = document.querySelector('.slide-progress-bar');
-        if (progressBar) {
-            progressBar.style.animation = `progress ${this.slideDuration}ms linear`;
-        }
-    }
-    
-    pauseProgressAnimation() {
-        const progressBar = document.querySelector('.slide-progress-bar');
-        if (progressBar) {
-            progressBar.style.animationPlayState = 'paused';
-        }
-    }
-    
-    resetProgressAnimation() {
-        const progressBar = document.querySelector('.slide-progress-bar');
-        if (progressBar) {
-            progressBar.style.animation = 'none';
-        }
-    }
-}
-
-// Smooth scrolling for anchor links amélioré
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            const headerHeight = document.getElementById('header').offsetHeight;
-            const targetPosition = target.offsetTop - headerHeight - 20;
-            
-            window.scrollTo({
-                top: targetPosition,
-                behavior: 'smooth'
-            });
-        }
-    });
-});
-
-// Service cards hover effect enhancement
-const serviceCards = document.querySelectorAll('.service-card');
-serviceCards.forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-15px) scale(1.03)';
-        this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
-        
-        // Animation de l'icône
-        const icon = this.querySelector('.service-icon');
-        if (icon) {
-            icon.style.transform = 'scale(1.1) rotate(5deg)';
-        }
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0) scale(1)';
-        this.style.boxShadow = '';
-        
-        // Réinitialiser l'icône
-        const icon = this.querySelector('.service-icon');
-        if (icon) {
-            icon.style.transform = 'scale(1) rotate(0)';
-        }
-    });
-});
-
-// Animation des statistiques au survol
-const statItems = document.querySelectorAll('.stat-item');
-statItems.forEach(item => {
-    item.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-10px) scale(1.05)';
-        const icon = this.querySelector('.stat-icon');
-        if (icon) {
-            icon.style.transform = 'scale(1.2)';
-            icon.style.color = '#FF9A1F';
-        }
-    });
-    
-    item.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0) scale(1)';
-        const icon = this.querySelector('.stat-icon');
-        if (icon) {
-            icon.style.transform = 'scale(1)';
-            icon.style.color = '';
-        }
-    });
-});
-
-// Loading animation améliorée
-function showLoadingAnimation() {
-    const loader = document.createElement('div');
-    loader.className = 'page-loader';
-    loader.innerHTML = `
-        <div class="loader-content">
-            <div class="loader-logo">
-                <img src="images/logo/logo.png" alt="Kolonga Digital Africa">
-            </div>
-            <div class="loader-spinner"></div>
-        </div>
-    `;
-    document.body.appendChild(loader);
-    
-    // Cacher le loader après le chargement
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.remove();
-            }, 500);
-        }, 1000);
+        counter.dataset.animated = 'true';
+        requestAnimationFrame(step);
     });
 }
 
-// Gestion des erreurs de chargement d'images
-function handleImageErrors() {
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-        img.addEventListener('error', function() {
-            this.src = 'images/placeholder.jpg';
-            this.alt = 'Image non disponible';
-        });
-    });
-}
-
-// Performance optimization - Lazy loading
+/* ===========================
+   Lazy Loading images (data-src) & fallback
+   =========================== */
 function initLazyLoading() {
-    const lazyImages = document.querySelectorAll('img[data-src]');
-    
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
+    const lazyImages = qsa('img[data-src]');
+    if ('IntersectionObserver' in window) {
+        const imgObserver = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
                 const img = entry.target;
                 img.src = img.dataset.src;
-                img.classList.remove('lazy');
-                imageObserver.unobserve(img);
+                img.addEventListener('load', () => {
+                    img.classList.remove('lazy');
+                    img.removeAttribute('data-src');
+                });
+                obs.unobserve(img);
+            });
+        }, { root: null, rootMargin: '200px 0px', threshold: 0.01 });
+
+        lazyImages.forEach(img => imgObserver.observe(img));
+    } else {
+        // fallback: load all
+        lazyImages.forEach(img => {
+            img.src = img.dataset.src;
+            img.classList.remove('lazy');
+            img.removeAttribute('data-src');
+        });
+    }
+}
+
+/* Error handling for images */
+function handleImageErrors() {
+    qsa('img').forEach(img => {
+        img.addEventListener('error', function () {
+            if (this.dataset.failed) return; // avoid loops
+            this.dataset.failed = 'true';
+            this.src = 'images/placeholder.jpg';
+            this.alt = this.alt || 'Image non disponible';
+            console.warn('Image fallback used for', this);
+        });
+    });
+}
+
+/* ===========================
+   Hero Slider (object-oriented)
+   - Uses requestAnimationFrame for timing
+   - Accessible: aria-live region, keyboard navigation
+   =========================== */
+class HeroSlider {
+    constructor(selector = '.hero-slider') {
+        this.root = qs(selector);
+        if (!this.root) return;
+        this.slides = qsa('.slide', this.root);
+        this.dots = qsa('.dot', this.root);
+        this.prevBtn = qs('.slider-prev', this.root) || qs('.slider-prev');
+        this.nextBtn = qs('.slider-next', this.root) || qs('.slider-next');
+        this.controls = qs('.slider-controls');
+        this.current = 0;
+        this.isPaused = false;
+        this.rafId = null;
+        this.lastTick = performance.now();
+        this.accumulator = 0;
+        this.slideDuration = CONFIG.slideDuration;
+        this.init();
+    }
+
+    init() {
+        // ensure aria attributes for accessibility
+        this.root.setAttribute('role', 'region');
+        this.root.setAttribute('aria-label', 'Carrousel principal');
+
+        // show first slide
+        this.updateSlides();
+
+        // preload backgrounds
+        this.preloadBgImages();
+
+        // events
+        if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.prev());
+        if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.next());
+        this.dots.forEach((dot, idx) => dot.addEventListener('click', () => this.go(idx)));
+
+        // pause on hover/focus
+        this.root.addEventListener('mouseenter', () => this.pause());
+        this.root.addEventListener('mouseleave', () => this.play());
+        this.root.addEventListener('focusin', () => this.pause());
+        this.root.addEventListener('focusout', () => this.play());
+
+        // keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') this.prev();
+            if (e.key === 'ArrowRight') this.next();
+        });
+
+        // swipe for touch
+        this.addSwipe();
+
+        // start auto-play loop
+        this.play();
+    }
+
+    preloadBgImages() {
+        this.slides.forEach(s => {
+            const bg = s.style.backgroundImage;
+            if (bg && bg.includes('url')) {
+                const url = bg.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
+                const i = new Image();
+                i.src = url;
+            }
+        });
+    }
+
+    addSwipe() {
+        let startX = 0;
+        this.root.addEventListener('touchstart', (e) => startX = e.touches[0].clientX);
+        this.root.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) this.next(); else this.prev();
+            }
+        });
+    }
+
+    updateSlides() {
+        this.slides.forEach((s, idx) => {
+            s.classList.toggle('active', idx === this.current);
+        });
+        this.dots.forEach((d, idx) => d.classList.toggle('active', idx === this.current));
+        // animate hero text if present
+        const text = qs('.hero-text', this.slides[this.current]);
+        if (text) {
+            text.style.animation = 'none';
+            setTimeout(() => text.style.animation = 'slideInUp 0.8s ease-out', 20);
+        }
+        // reset progress bar if exists
+        const bar = qs('.slide-progress-bar');
+        if (bar) {
+            bar.style.animation = 'none';
+            // trigger reflow then restart
+            setTimeout(() => bar.style.animation = `progress ${this.slideDuration}ms linear`, 20);
+        }
+    }
+
+    next() {
+        this.current = (this.current + 1) % this.slides.length;
+        this.updateSlides();
+    }
+    prev() {
+        this.current = (this.current - 1 + this.slides.length) % this.slides.length;
+        this.updateSlides();
+    }
+    go(idx) {
+        if (idx === this.current) return;
+        this.current = idx;
+        this.updateSlides();
+    }
+
+    loopTick(now) {
+        if (this.isPaused) {
+            this.lastTick = now;
+            this.rafId = requestAnimationFrame(this.loopTick.bind(this));
+            return;
+        }
+        const delta = now - this.lastTick;
+        this.accumulator += delta;
+        if (this.accumulator >= this.slideDuration) {
+            this.next();
+            this.accumulator = 0;
+        }
+        this.lastTick = now;
+        this.rafId = requestAnimationFrame(this.loopTick.bind(this));
+    }
+
+    play() {
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+        this.isPaused = false;
+        this.lastTick = performance.now();
+        this.accumulator = 0;
+        this.rafId = requestAnimationFrame(this.loopTick.bind(this));
+        const bar = qs('.slide-progress-bar');
+        if (bar) bar.style.animationPlayState = 'running';
+    }
+    pause() {
+        this.isPaused = true;
+        const bar = qs('.slide-progress-bar');
+        if (bar) bar.style.animationPlayState = 'paused';
+    }
+
+    destroy() {
+        if (this.rafId) cancelAnimationFrame(this.rafId);
+    }
+}
+
+/* ===========================
+   Smooth scroll for anchors (accounts for header height)
+   =========================== */
+function initSmoothAnchors() {
+    qsa('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (!href || href === '#') return;
+            const target = qs(href);
+            if (!target) return;
+            e.preventDefault();
+            const header = qs('#header') || qs('header');
+            const headerHeight = header ? header.offsetHeight : 0;
+            const top = target.getBoundingClientRect().top + window.scrollY - headerHeight - 18;
+            window.scrollTo({ top, behavior: 'smooth' });
+        });
+    });
+}
+
+/* ===========================
+   Misc UI interactions (cards hover, stat hover)
+   =========================== */
+function initUIInteractions() {
+    qsa('.service-card').forEach(card => {
+        card.addEventListener('mouseenter', function () {
+            this.style.transform = 'translateY(-12px) scale(1.02)';
+            this.style.boxShadow = '0 20px 40px rgba(0,0,0,0.12)';
+            const icon = qs('.service-icon', this);
+            if (icon) icon.style.transform = 'scale(1.06) rotate(3deg)';
+        });
+        card.addEventListener('mouseleave', function () {
+            this.style.transform = '';
+            this.style.boxShadow = '';
+            const icon = qs('.service-icon', this);
+            if (icon) icon.style.transform = '';
+        });
+    });
+
+    qsa('.stat-item').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            item.style.transform = 'translateY(-8px) scale(1.04)';
+            const icon = qs('.stat-icon', item);
+            if (icon) {
+                icon.style.transform = 'scale(1.15)';
+                icon.style.color = '#FF9A1F';
+            }
+        });
+        item.addEventListener('mouseleave', () => {
+            item.style.transform = '';
+            const icon = qs('.stat-icon', item);
+            if (icon) {
+                icon.style.transform = '';
+                icon.style.color = '';
             }
         });
     });
-    
-    lazyImages.forEach(img => imageObserver.observe(img));
 }
 
-// Animation au scroll pour les éléments
-function initScrollAnimations() {
-    const animatedElements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right');
-    
-    const elementObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animated');
+/* ===========================
+   Restore scroll position between reloads
+   =========================== */
+function saveScrollPosition() {
+    try {
+        sessionStorage.setItem('scrollPosition', String(window.scrollY || 0));
+    } catch (e) { /* ignore */ }
+}
+
+function restoreScrollPosition() {
+    try {
+        const pos = sessionStorage.getItem('scrollPosition');
+        if (pos) {
+            window.scrollTo(0, parseInt(pos, 10));
+            sessionStorage.removeItem('scrollPosition');
+        }
+    } catch (e) { /* ignore */ }
+}
+
+/* ===========================
+   Init function (DOMContentLoaded)
+   =========================== */
+document.addEventListener('DOMContentLoaded', function () {
+    // show loader
+    showLoader();
+
+    // load components and then initialise header/footer
+    loadComponents();
+
+    // init lazy loading and image fallback
+    initLazyLoading();
+    handleImageErrors();
+
+    // central observer
+    initGlobalObserver();
+    // observe primary sections (defensive)
+    qsa('section').forEach(sec => globalObserver.observe(sec));
+
+    // init other UI
+    initSmoothAnchors();
+    initUIInteractions();
+
+    // Hero slider initialisation (after short delay to allow DOM inserted)
+    setTimeout(() => {
+        try {
+            // only init if hero exists
+            if (qs('.hero-slider')) {
+                new HeroSlider();
+            }
+            // create progress bar container if slider controls exist and no progress
+            if (qs('.slider-controls') && !qs('.slide-progress')) {
+                const progressWrap = document.createElement('div');
+                progressWrap.className = 'slide-progress';
+                progressWrap.innerHTML = '<div class="slide-progress-bar"></div>';
+                qs('.slider-controls').appendChild(progressWrap);
+            }
+        } catch (e) {
+            console.error('HeroSlider init error', e);
+        }
+    }, 450);
+
+    // Fade-in on scroll using simple fallback if needed
+    window.addEventListener('scroll', throttle(() => {
+        qsa('.fade-in').forEach(el => {
+            const rect = el.getBoundingClientRect();
+            if (rect.top < (window.innerHeight - 120)) {
+                el.classList.add('visible');
+                el.style.transform = 'translateY(0)';
+                el.style.opacity = '1';
             }
         });
-    }, { threshold: 0.1 });
-    
-    animatedElements.forEach(el => elementObserver.observe(el));
+    }, 180));
+
+    // save scroll position before unload
+    window.addEventListener('beforeunload', saveScrollPosition);
+    // restore after load
+    window.addEventListener('load', restoreScrollPosition);
+});
+
+/* ===========================
+   Exportable helpers (if used in modular build)
+   =========================== */
+if (typeof window !== 'undefined') {
+    window.Kolonga = {
+        initHeader,
+        initFooter,
+        HeroSlider,
+        initLazyLoading,
+        initGlobalObserver
+    };
 }
-
-// Initialisation au chargement de la page
-document.addEventListener('DOMContentLoaded', function() {
-    showLoadingAnimation();
-    loadComponents();
-    handleImageErrors();
-    initLazyLoading();
-    initScrollAnimations();
-    
-    window.addEventListener('scroll', fadeInOnScroll);
-    window.addEventListener('load', fadeInOnScroll);
-    
-    // Initialiser le slider après un court délai
-    setTimeout(() => {
-        new HeroSlider();
-    }, 500);
-});
-
-// Gestion du rechargement de la page
-window.addEventListener('beforeunload', function() {
-    // Sauvegarder la position de scroll
-    sessionStorage.setItem('scrollPosition', window.scrollY);
-});
-
-// Restaurer la position de scroll
-window.addEventListener('load', function() {
-    const scrollPosition = sessionStorage.getItem('scrollPosition');
-    if (scrollPosition) {
-        window.scrollTo(0, parseInt(scrollPosition));
-        sessionStorage.removeItem('scrollPosition');
-    }
-});
