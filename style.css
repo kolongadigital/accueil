@@ -45,6 +45,7 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 20px;
 }
 
+/* --- Boutons --- */
 .btn {
     display: inline-block;
     padding: 14px 32px;
@@ -81,7 +82,7 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(-3px);
 }
 
-/* Header */
+/* --- HEADER --- */
 header {
     position: fixed;
     top: 0;
@@ -117,6 +118,7 @@ header.scrolled {
     width: auto;
 }
 
+/* --- NAVIGATION --- */
 nav ul {
     display: flex;
     list-style: none;
@@ -154,44 +156,93 @@ nav ul li a:hover::after {
     width: 100%;
 }
 
+/* --- Bouton menu mobile --- */
 .mobile-menu-btn {
     display: none;
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 26px;
     color: var(--dark-text);
     cursor: pointer;
     z-index: 1001;
 }
 
-/* Mobile Navigation */
-.mobile-nav-active {
+/* --- Menu mobile déroulant --- */
+nav ul.nav-expanded {
     display: flex !important;
     flex-direction: column;
     position: absolute;
     top: 100%;
     left: 0;
     width: 100%;
-    background-color: var(--white);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: var(--white);
     padding: 20px 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     z-index: 999;
+    animation: slideInDown 0.3s ease forwards;
 }
 
-.mobile-nav-active li {
-    margin: 0 !important;
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+nav ul.nav-expanded li {
+    margin: 0;
     text-align: center;
 }
 
-.mobile-nav-active li a {
+nav ul.nav-expanded li a {
     display: block;
-    padding: 15px 20px;
+    padding: 15px 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.mobile-nav-active li:last-child a {
+nav ul.nav-expanded li:last-child a {
     border-bottom: none;
 }
+
+/* --- Pour les écrans larges : menu visible --- */
+@media (min-width: 769px) {
+    nav ul {
+        display: flex !important;
+        position: static;
+        flex-direction: row;
+        background: none;
+        box-shadow: none;
+        height: auto;
+    }
+
+    .mobile-menu-btn {
+        display: none;
+    }
+}
+
+/* --- Pour les écrans mobiles : bouton visible --- */
+@media (max-width: 768px) {
+    nav ul {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .logo-img {
+        height: 50px;
+    }
+
+    header {
+        padding: 10px 20px;
+    }
+}
+
 
 /* Hero Section avec Slider */
 .hero {
