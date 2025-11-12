@@ -1,11 +1,12 @@
 /* script.js - Kolonga Digital Africa
-   Version: 1.0.0
+   Version: 1.1.0
    Objectifs:
    - Menu mobile déroulant du haut vers le bas avec overlay et blocage du scroll
    - Loader (logo + spinner)
    - Chargement header/footer via fetch (avec cache localStorage)
    - Lazy loading, IntersectionObserver animations, compteurs
    - Hero slider optimisé
+   - About page specific animations (charts, leader cards)
    - Accessibilité (ARIA), throttling scroll, divers fix
 */
 
@@ -199,7 +200,7 @@ function initHeader() {
         document.body.appendChild(overlay);
     }
 
-    // ✅ Fonction de mise à jour du menu selon la taille de l’écran
+    // ✅ Fonction de mise à jour du menu selon la taille de l'écran
     function updateMenuMode() {
         const isMobile = window.innerWidth < 992;
 
@@ -253,7 +254,7 @@ function initHeader() {
         });
     }
 
-    // ✅ Fermer le menu si on clique sur un lien ou sur l’overlay
+    // ✅ Fermer le menu si on clique sur un lien ou sur l'overlay
     function closeMobileMenu() {
         if (nav.classList.contains('nav-expanded')) {
             nav.style.maxHeight = '0';
@@ -375,6 +376,9 @@ function initGlobalObserver() {
             if (el.classList.contains('stats')) {
                 runCountersIn(el);
             }
+            if (el.classList.contains('expertise')) {
+                initChartAnimations();
+            }
             // reveal simple fade-in children
             qsa('.fade-in', el).forEach((child, idx) => {
                 child.style.transitionDelay = (idx * 80) + 'ms';
@@ -409,6 +413,119 @@ function runCountersIn(container) {
         };
         counter.dataset.animated = 'true';
         requestAnimationFrame(step);
+    });
+}
+
+/* ===========================
+   About Page Specific Functions
+   =========================== */
+
+function initAboutPage() {
+    // Animate chart bars on scroll
+    const chartBars = qsa('.chart-fill');
+    if (chartBars.length > 0) {
+        const chartObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bar = entry.target;
+                    const width = bar.getAttribute('data-width') + '%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 300);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        chartBars.forEach(bar => chartObserver.observe(bar));
+    }
+
+    // Enhanced leader card interactions
+    qsa('.leader-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const overlay = qs('.leader-overlay', this);
+            if (overlay) {
+                overlay.style.opacity = '1';
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const overlay = qs('.leader-overlay', this);
+            if (overlay) {
+                overlay.style.opacity = '0';
+            }
+        });
+    });
+
+    // Smooth scroll for hero indicator
+    const scrollIndicator = qs('.hero-scroll-indicator');
+    if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', () => {
+            const missionSection = qs('.mission-vision');
+            if (missionSection) {
+                const header = qs('#header') || qs('header');
+                const headerHeight = header ? header.offsetHeight : 0;
+                const top = missionSection.getBoundingClientRect().top + window.scrollY - headerHeight;
+                window.scrollTo({ top, behavior: 'smooth' });
+            }
+        });
+    }
+
+    // Enhanced value cards animation
+    qsa('.value-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const icon = qs('.value-icon', this);
+            if (icon) {
+                icon.style.transform = 'scale(1.1) rotate(5deg)';
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const icon = qs('.value-icon', this);
+            if (icon) {
+                icon.style.transform = 'scale(1) rotate(0)';
+            }
+        });
+    });
+
+    // Mission/Vision cards enhanced interaction
+    qsa('.mv-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-12px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-10px) scale(1)';
+        });
+    });
+
+    // Trust items enhanced interaction
+    qsa('.trust-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            const icon = qs('i', this);
+            if (icon) {
+                icon.style.transform = 'scale(1.2)';
+                icon.style.color = 'var(--primary-blue)';
+            }
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            const icon = qs('i', this);
+            if (icon) {
+                icon.style.transform = 'scale(1)';
+                icon.style.color = 'var(--primary-orange)';
+            }
+        });
+    });
+}
+
+/* Initialize chart animations */
+function initChartAnimations() {
+    const chartItems = qsa('.chart-item');
+    chartItems.forEach((item, index) => {
+        setTimeout(() => {
+            item.style.opacity = '1';
+            item.style.transform = 'translateX(0)';
+        }, index * 200);
     });
 }
 
@@ -662,6 +779,33 @@ function initUIInteractions() {
             }
         });
     });
+
+    // Enhanced partner logo interactions
+    qsa('.partner-logo').forEach(logo => {
+        logo.addEventListener('mouseenter', function() {
+            const img = qs('img', this);
+            if (img) {
+                img.style.transform = 'scale(1.1)';
+            }
+            const icon = qs('i', this);
+            if (icon) {
+                icon.style.transform = 'scale(1.2)';
+                icon.style.color = 'var(--primary-orange)';
+            }
+        });
+        
+        logo.addEventListener('mouseleave', function() {
+            const img = qs('img', this);
+            if (img) {
+                img.style.transform = 'scale(1)';
+            }
+            const icon = qs('i', this);
+            if (icon) {
+                icon.style.transform = 'scale(1)';
+                icon.style.color = 'var(--primary-blue)';
+            }
+        });
+    });
 }
 
 /* ===========================
@@ -705,6 +849,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // init other UI
     initSmoothAnchors();
     initUIInteractions();
+
+    // Initialize about page features if on about page
+    if (document.querySelector('.hero-about')) {
+        initAboutPage();
+    }
 
     // Hero slider initialisation (after short delay to allow DOM inserted)
     setTimeout(() => {
@@ -752,6 +901,7 @@ if (typeof window !== 'undefined') {
         initFooter,
         HeroSlider,
         initLazyLoading,
-        initGlobalObserver
+        initGlobalObserver,
+        initAboutPage
     };
 }
