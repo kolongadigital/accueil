@@ -4,40 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kolonga Digital Africa — Souveraineté numérique & IA en Afrique centrale</title>
+    <meta name="description" content="Kolonga Digital Africa - Solutions de souveraineté numérique, IA et transformation digitale pour l'Afrique centrale. Développement web, mobile, e-gouvernance et formations.">
+    <meta name="keywords" content="digital afrique, IA, souveraineté numérique, développement web, e-gouvernance, transformation digitale, Afrique centrale, Congo, Brazzaville">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Kolonga Digital Africa — Souveraineté numérique & IA en Afrique centrale">
+    <meta property="og:description" content="Solutions de souveraineté numérique, IA et transformation digitale pour l'Afrique centrale. Développement web, mobile, e-gouvernance et formations.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kolongadigital.africa">
+    <meta property="og:image" content="https://kolongadigital.africa/images/logo/logo.png">
+    <meta property="og:image:width" content="180">
+    <meta property="og:image:height" content="60">
+    <meta property="og:site_name" content="Kolonga Digital Africa">
+    <meta property="og:locale" content="fr_FR">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Kolonga Digital Africa — Souveraineté numérique & IA en Afrique centrale">
+    <meta name="twitter:description" content="Solutions de souveraineté numérique, IA et transformation digitale pour l'Afrique centrale. Développement web, mobile, e-gouvernance et formations.">
+    <meta name="twitter:image" content="https://kolongadigital.africa/images/logo/logo.png">
+    <meta name="twitter:site" content="@KolongaDigital">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="author" content="Kolonga Digital Africa">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Preload critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/logo/logo.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/logo/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/logo/logo.png">
 </head>
 <body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
     <!-- Header -->
     <header id="header">
         <div class="container header-container">
-            <a href="index.html" class="logo">
-                <img src="images/logo/logo.png" alt="Kolonga Digital Africa" class="logo-img">
+            <a href="index.html" class="logo" aria-label="Kolonga Digital Africa - Page d'accueil">
+                <img src="images/logo/logo.png" alt="Kolonga Digital Africa" class="logo-img" width="180" height="60">
             </a>
-            <nav id="main-nav">
+            <nav id="main-nav" aria-label="Navigation principale">
                 <ul>
-                    <li><a href="index.html">Accueil</a></li>
-                    <li><a href="about.html">À propos</a></li>
-                    <li><a href="services.html">Offres</a></li>
-                    <li><a href="projects.html">Projets</a></li>
-                    <li><a href="realisations.html">Réalisations</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="index.html" class="nav-link active">Accueil</a></li>
+                    <li><a href="about.html" class="nav-link">À propos</a></li>
+                    <li><a href="services.html" class="nav-link">Offres</a></li>
+                    <li><a href="projects.html" class="nav-link">Projets</a></li>
+                    <li><a href="realisations.html" class="nav-link">Réalisations</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
                 </ul>
             </nav>
-            <button class="mobile-menu-btn" id="mobile-menu-toggle">
-                <i class="fas fa-bars"></i>
+            <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Ouvrir le menu mobile" aria-expanded="false">
+                <i class="fas fa-bars" aria-hidden="true"></i>
             </button>
         </div>
     </header>
 
     <!-- Hero Section avec slider -->
-    <section class="hero">
+    <section class="hero" id="main-content">
         <div class="hero-slider">
             <!-- Slide 1 -->
-            <div class="slide active" style="background-image: url('images/themes/accueil_1.png');">
+            <div class="slide active" style="background-image: url('images/themes/accueil_1.png');" role="img" aria-label="Kolonga Digital Africa - Partenaire pour la souveraineté numérique">
                 <div class="slide-overlay"></div>
                 <div class="container hero-content">
                     <div class="hero-text fade-in">
@@ -46,14 +81,14 @@
                         <p>Transformez votre vision numérique en réalité avec des solutions sur mesure pour l'Afrique de demain.</p>
                         <div class="hero-btns">
                             <a href="contact.html" class="btn btn-primary">Demander un devis</a>
-                            <a href="services.html" class="btn btn-secondary">Nos solutions</a>
+                            <a href="#services" class="btn btn-secondary">Nos solutions</a>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Slide 2 -->
-            <div class="slide" style="background-image: url('images/themes/accueil_2.png');">
+            <div class="slide" style="background-image: url('images/themes/accueil_2.png');" role="img" aria-label="Solutions Digitales - Développement Web & Mobile Expert">
                 <div class="slide-overlay"></div>
                 <div class="container hero-content">
                     <div class="hero-text fade-in">
@@ -61,15 +96,15 @@
                         <h2 class="hero-subtitle">Développement Web & Mobile Expert</h2>
                         <p>Des applications web et mobiles performantes conçues pour booster votre business en Afrique.</p>
                         <div class="hero-btns">
-                            <a href="contact.html" class="btn btn-primary">Nos réalisations</a>
-                            <a href="services.html" class="btn btn-secondary">Nos projets</a>
+                            <a href="realisations.html" class="btn btn-primary">Nos réalisations</a>
+                            <a href="projects.html" class="btn btn-secondary">Nos projets</a>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Slide 3 -->
-            <div class="slide" style="background-image: url('images/themes/accueil_3.png');">
+            <div class="slide" style="background-image: url('images/themes/accueil_3.png');" role="img" aria-label="Innovations Tech - Produits Made in Africa">
                 <div class="slide-overlay"></div>
                 <div class="container hero-content">
                     <div class="hero-text fade-in">
@@ -78,14 +113,14 @@
                         <p>Découvrez nos solutions propriétaires révolutionnaires conçues pour les défis africains.</p>
                         <div class="hero-btns">
                             <a href="projects.html" class="btn btn-primary">Nos produits</a>
-                            <a href="contact.html" class="btn btn-secondary">Acheter une licence</a>
+                            <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20d'information%20-%20Achat%20de%20licence&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20obtenir%20des%20informations%20sur%20l'achat%20d'une%20licence%20de%20vos%20produits%20technologiques.%0A%0APouvez-vous%20me%20faire%20parvenir%20les%20détails%20sur%20:%0A-%20Les%20fonctionnalités%20disponibles%0A-%20Les%20tarifs%20des%20licences%20%0A-%20Les%20conditions%20de%20support%20et%20maintenance%0A-%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'entreprise/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="btn btn-secondary">Acheter une licence</a>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Slide 4 -->
-            <div class="slide" style="background-image: url('images/themes/accueil_4.png');">
+            <div class="slide" style="background-image: url('images/themes/accueil_4.png');" role="img" aria-label="Formation & Excellence - Écosystème Digital Africain">
                 <div class="slide-overlay"></div>
                 <div class="container hero-content">
                     <div class="hero-text fade-in">
@@ -93,15 +128,15 @@
                         <h2 class="hero-subtitle">Écosystème Digital Africain</h2>
                         <p>Nous formons la prochaine génération de talents numériques pour une Afrique souveraine.</p>
                         <div class="hero-btns">
-                            <a href="contact.html" class="btn btn-primary">Nos formations</a>
-                            <a href="services.html" class="btn btn-secondary">Devenir partenaire</a>
+                            <a href="services.html#formations" class="btn btn-primary">Nos formations</a>
+                            <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20de%20partenariat%20-%20Formation%20digitale&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20devenir%20partenaire%20dans%20le%20cadre%20de%20vos%20programmes%20de%20formation%20digitale.%0A%0ANotre%20organisation%20est%20intéressée%20par%20:%0A-%20Les%20modalités%20de%20partenariat%0A-%20Les%20programmes%20de%20formation%20disponibles%0A-%20Les%20conditions%20de%20collaboration%0A-%20Les%20opportunités%20de%20co-développement%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'entreprise/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="btn btn-secondary">Devenir partenaire</a>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Slide 5 -->
-            <div class="slide" style="background-image: url('images/themes/accueil_5.png');">
+            <div class="slide" style="background-image: url('images/themes/accueil_5.png');" role="img" aria-label="PPP & Infrastructures - Partenariats Stratégiques">
                 <div class="slide-overlay"></div>
                 <div class="container hero-content">
                     <div class="hero-text fade-in">
@@ -109,7 +144,7 @@
                         <h2 class="hero-subtitle">Partenariats Stratégiques</h2>
                         <p>Des infrastructures numériques durables grâce à des modèles de financement innovants.</p>
                         <div class="hero-btns">
-                            <a href="contact.html" class="btn btn-primary">Devenir partenaire</a>
+                            <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20de%20partenariat%20PPP%20-%20Infrastructures%20digitales&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20explorer%20les%20possibilités%20de%20partenariat%20public-privé%20(PPP)%20pour%20le%20développement%20d'infrastructures%20digitales.%0A%0ANous%20sommes%20intéressés%20par%20:%0A-%20Les%20modèles%20de%20PPP%20que%20vous%20proposez%0A-%20Les%20secteurs%20d'infrastructure%20concernés%0A-%20Les%20conditions%20de%20collaboration%0A-%20Les%20étapes%20de%20mise%20en%20œuvre%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'entreprise/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="btn btn-primary">Devenir partenaire</a>
                             <a href="services.html" class="btn btn-secondary">Étude de faisabilité</a>
                         </div>
                     </div>
@@ -119,136 +154,136 @@
         
         <!-- Contrôles du slider -->
         <div class="slider-controls">
-            <button class="slider-prev">
-                <i class="fas fa-chevron-left"></i>
+            <button class="slider-prev" aria-label="Slide précédent">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
             </button>
-            <div class="slider-dots">
-                <span class="dot active" data-slide="0"></span>
-                <span class="dot" data-slide="1"></span>
-                <span class="dot" data-slide="2"></span>
-                <span class="dot" data-slide="3"></span>
-                <span class="dot" data-slide="4"></span>
+            <div class="slider-dots" role="tablist">
+                <button class="dot active" data-slide="0" role="tab" aria-label="Afficher le slide 1" aria-selected="true"></button>
+                <button class="dot" data-slide="1" role="tab" aria-label="Afficher le slide 2" aria-selected="false"></button>
+                <button class="dot" data-slide="2" role="tab" aria-label="Afficher le slide 3" aria-selected="false"></button>
+                <button class="dot" data-slide="3" role="tab" aria-label="Afficher le slide 4" aria-selected="false"></button>
+                <button class="dot" data-slide="4" role="tab" aria-label="Afficher le slide 5" aria-selected="false"></button>
             </div>
-            <button class="slider-next">
-                <i class="fas fa-chevron-right"></i>
+            <button class="slider-next" aria-label="Slide suivant">
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
             </button>
         </div>
     </section>
 
     <!-- Services Section -->
-    <section class="services">
+    <section class="services" id="services" aria-labelledby="services-heading">
         <div class="container">
             <div class="section-header fade-in">
-                <h2>Nos Solutions Digitales Complètes</h2>
+                <h2 id="services-heading">Nos Solutions Digitales Complètes</h2>
                 <p>Découvrez notre gamme de services conçus pour propulser votre transformation numérique en Afrique</p>
             </div>
             <div class="services-grid">
                 <div class="service-card fade-in">
                     <div class="service-icon">
-                        <i class="fas fa-laptop-code"></i>
+                        <i class="fas fa-laptop-code" aria-hidden="true"></i>
                     </div>
                     <h3>Développement Web & Mobile</h3>
                     <p>Création d'applications web et mobiles sur mesure, sites vitrine et e-commerce performants adaptés aux réalités africaines.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Sites web responsive</li>
-                        <li><i class="fas fa-check"></i> Applications mobiles</li>
-                        <li><i class="fas fa-check"></i> E-commerce</li>
-                        <li><i class="fas fa-check"></i> Solutions sur mesure</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Sites web responsive</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Applications mobiles</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> E-commerce</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Solutions sur mesure</li>
                     </ul>
-                    <a href="services.html" class="service-link">Démarrer mon projet <i class="fas fa-arrow-right"></i></a>
+                    <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20de%20devis%20-%20Développement%20web%20et%20mobile&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20démarrer%20un%20projet%20de%20développement%20web%20et/ou%20mobile%20et%20sollicite%20un%20devis.%0A%0ADescription%20du%20projet%20:%0A-%20Type%20d'application%20(site%20web,%20application%20mobile,%20e-commerce)%0A-%20Fonctionnalités%20principales%20souhaitées%0A-%20Délai%20de%20réalisation%20envisagé%0A-%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'entreprise/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="service-link">Démarrer mon projet <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
                 <div class="service-card fade-in">
                     <div class="service-icon">
-                        <i class="fas fa-robot"></i>
+                        <i class="fas fa-robot" aria-hidden="true"></i>
                     </div>
                     <h3>IA & Transformation Digitale</h3>
                     <p>Solutions d'intelligence artificielle et d'automatisation pour optimiser vos processus et booster votre productivité.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Automatisation RPA</li>
-                        <li><i class="fas fa-check"></i> Analytics avancés</li>
-                        <li><i class="fas fa-check"></i> Chatbots intelligents</li>
-                        <li><i class="fas fa-check"></i> Machine Learning</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Automatisation RPA</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Analytics avancés</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Chatbots intelligents</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Machine Learning</li>
                     </ul>
-                    <a href="services.html" class="service-link">Optimiser mon entreprise <i class="fas fa-arrow-right"></i></a>
+                    <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20d'audit%20-%20Transformation%20digitale%20et%20IA&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20optimiser%20mon%20entreprise%20grâce%20à%20vos%20solutions%20d'IA%20et%20de%20transformation%20digitale.%0A%0ANos%20besoins%20:%0A-%20Audit%20de%20nos%20processus%20actuels%0A-%20Solutions%20d'automatisation%20adaptées%0A-%20Optimisation%20par%20l'IA%20et%20l'analytics%0A-%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'entreprise/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="service-link">Optimiser mon entreprise <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
                 <div class="service-card fade-in">
                     <div class="service-icon">
-                        <i class="fas fa-landmark"></i>
+                        <i class="fas fa-landmark" aria-hidden="true"></i>
                     </div>
                     <h3>E-Gouvernance & Secteur Public</h3>
                     <p>Digitalisation complète des administrations et services publics pour une gouvernance moderne et efficace.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Portails citoyens</li>
-                        <li><i class="fas fa-check"></i> Gestion électronique</li>
-                        <li><i class="fas fa-check"></i> Services en ligne</li>
-                        <li><i class="fas fa-check"></i> Systèmes sécurisés</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Portails citoyens</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Gestion électronique</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Services en ligne</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Systèmes sécurisés</li>
                     </ul>
-                    <a href="services.html" class="service-link">Moderniser l'administration <i class="fas fa-arrow-right"></i></a>
+                    <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20d'information%20-%20Solutions%20e-Gouvernance&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20moderniser%20mon%20administration/organisation%20publique%20grâce%20à%20vos%20solutions%20d'e-Gouvernance.%0A%0ANos%20objectifs%20:%0A-%0A%20Digitalisation%20des%20services%20publics%0A-%20Mise%20en%20place%20de%20portails%20citoyens%0A-%20Optimisation%20des%20processus%20administratifs%0A-%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'administration/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="service-link">Moderniser l'administration <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
                 <div class="service-card fade-in">
                     <div class="service-icon">
-                        <i class="fas fa-lightbulb"></i>
+                        <i class="fas fa-lightbulb" aria-hidden="true"></i>
                     </div>
                     <h3>Solutions Propriétaires</h3>
                     <p>Nos innovations technologiques exclusives, disponibles à l'achat pour répondre à vos besoins spécifiques.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Produits innovants</li>
-                        <li><i class="fas fa-check"></i> Licences disponibles</li>
-                        <li><i class="fas fa-check"></i> Support complet</li>
-                        <li><i class="fas fa-check"></i> Mises à jour régulières</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Produits innovants</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Licences disponibles</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Support complet</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Mises à jour régulières</li>
                     </ul>
-                    <a href="projects.html" class="service-link">Découvrir nos produits <i class="fas fa-arrow-right"></i></a>
+                    <a href="projects.html" class="service-link">Découvrir nos produits <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
                 <div class="service-card fade-in">
                     <div class="service-icon">
-                        <i class="fas fa-handshake"></i>
+                        <i class="fas fa-handshake" aria-hidden="true"></i>
                     </div>
                     <h3>PPP & Partenariats Stratégiques</h3>
                     <p>Modèles de partenariats public-privé innovants pour financer et déployer des infrastructures digitales.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Études de faisabilité</li>
-                        <li><i class="fas fa-check"></i> Modèles financiers</li>
-                        <li><i class="fas fa-check"></i> Gestion de projet</li>
-                        <li><i class="fas fa-check"></i> Accompagnement complet</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Études de faisabilité</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Modèles financiers</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Gestion de projet</li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i> Accompagnement complet</li>
                     </ul>
-                    <a href="services.html" class="service-link">Créer un partenariat <i class="fas fa-arrow-right"></i></a>
+                    <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20de%20partenariat%20PPP&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20créer%20un%20partenariat%20public-privé%20(PPP)%20pour%20le%20développement%20d'infrastructures%20digitales.%0A%0AContexte%20du%20projet%20:%0A-%20Secteur%20d'infrastructure%20concerné%0A-%0A%20Envergure%20et%20localisation%20du%20projet%0A-%0A%20Besoins%20en%20financement%20et%20expertise%0A-%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'entreprise/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="service-link">Créer un partenariat <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Stats Section -->
-    <section class="stats">
+    <section class="stats" aria-labelledby="stats-heading">
         <div class="container">
             <div class="section-header fade-in">
-                <h2>Notre Impact en Chiffres</h2>
+                <h2 id="stats-heading">Notre Impact en Chiffres</h2>
                 <p>Des résultats concrets qui témoignent de notre expertise et de notre engagement pour l'Afrique digitale</p>
             </div>
             <div class="stats-grid">
                 <div class="stat-item fade-in">
                     <div class="stat-icon">
-                        <i class="fas fa-globe-africa"></i>
+                        <i class="fas fa-globe-africa" aria-hidden="true"></i>
                     </div>
                     <div class="stat-number" data-target="18">0</div>
                     <div class="stat-label">Pays d'intervention</div>
                 </div>
                 <div class="stat-item fade-in">
                     <div class="stat-icon">
-                        <i class="fas fa-graduation-cap"></i>
+                        <i class="fas fa-graduation-cap" aria-hidden="true"></i>
                     </div>
                     <div class="stat-number" data-target="5000">0</div>
                     <div class="stat-label">Jeunes formés d'ici 2030</div>
                 </div>
                 <div class="stat-item fade-in">
                     <div class="stat-icon">
-                        <i class="fas fa-rocket"></i>
+                        <i class="fas fa-rocket" aria-hidden="true"></i>
                     </div>
                     <div class="stat-number" data-target="15">0</div>
                     <div class="stat-label">Projets en cours de réalisation</div>
                 </div>
                 <div class="stat-item fade-in">
                     <div class="stat-icon">
-                        <i class="fas fa-cube"></i>
+                        <i class="fas fa-cube" aria-hidden="true"></i>
                     </div>
                     <div class="stat-number" data-target="2">0</div>
                     <div class="stat-label">Solutions numériques sur le marché chaque année</div>
@@ -258,29 +293,29 @@
     </section>
 
     <!-- Innovation Section -->
-    <section class="innovation">
+    <section class="innovation" aria-labelledby="innovation-heading">
         <div class="container">
             <div class="innovation-content">
                 <div class="innovation-text fade-in">
-                    <h2>Nos Innovations Technologiques Exclusives</h2>
+                    <h2 id="innovation-heading">Nos Innovations Technologiques Exclusives</h2>
                     <p>Découvrez nos solutions propriétaires révolutionnaires, conçues et développées en interne pour répondre aux défis spécifiques du marché africain.</p>
                     <div class="innovation-features">
                         <div class="feature">
-                            <i class="fas fa-shield-alt"></i>
+                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
                             <div>
                                 <h4>Solutions Sécurisées</h4>
                                 <p>Technologies robustes adaptées aux contextes africains</p>
                             </div>
                         </div>
                         <div class="feature">
-                            <i class="fas fa-sync-alt"></i>
+                            <i class="fas fa-sync-alt" aria-hidden="true"></i>
                             <div>
                                 <h4>Mises à Jour Régulières</h4>
                                 <p>Évolutions constantes pour rester à la pointe</p>
                             </div>
                         </div>
                         <div class="feature">
-                            <i class="fas fa-headset"></i>
+                            <i class="fas fa-headset" aria-hidden="true"></i>
                             <div>
                                 <h4>Support Premium</h4>
                                 <p>Accompagnement personnalisé pour votre succès</p>
@@ -293,25 +328,25 @@
                     <div class="innovation-card">
                         <div class="card-header">
                             <h3>Nos Solutions Stars</h3>
-                            <span>Nouveau</span>
+                            <span class="badge">Nouveau</span>
                         </div>
                         <div class="card-content">
                             <div class="product">
-                                <i class="fas fa-mobile-alt"></i>
+                                <i class="fas fa-mobile-alt" aria-hidden="true"></i>
                                 <div>
                                     <h4>AfriPay Pro</h4>
                                     <p>Solution de paiement mobile unifiée</p>
                                 </div>
                             </div>
                             <div class="product">
-                                <i class="fas fa-clinic-medical"></i>
+                                <i class="fas fa-clinic-medical" aria-hidden="true"></i>
                                 <div>
                                     <h4>eSanté Connect</h4>
                                     <p>Plateforme médicale intelligente</p>
                                 </div>
                             </div>
                             <div class="product">
-                                <i class="fas fa-graduation-cap"></i>
+                                <i class="fas fa-graduation-cap" aria-hidden="true"></i>
                                 <div>
                                     <h4>EduTech Suite</h4>
                                     <p>Écosystème éducatif digital complet</p>
@@ -325,27 +360,27 @@
     </section>
 
     <!-- Partners Section -->
-    <section class="partners">
+    <section class="partners" aria-labelledby="partners-heading">
         <div class="container">
             <div class="section-header fade-in">
-                <h2>Ils Nous Font Confiance</h2>
+                <h2 id="partners-heading">Ils Nous Font Confiance</h2>
                 <p>Rejoignez les organisations qui nous accordent leur confiance pour leur transformation digitale</p>
             </div>
             <div class="partners-grid">
                 <div class="partner-logo fade-in">
-                    <img src="images/logo/kosala.png" alt="Kosàla Africa PME">
+                    <img src="images/logo/kosala.png" alt="Kosàla Africa PME" width="120" height="60">
                     <p>Partenaire Stratégique</p>
                 </div>
                 <div class="partner-logo fade-in">
-                    <i class="fas fa-university"></i>
+                    <i class="fas fa-university" aria-hidden="true"></i>
                     <p>Institutions Publiques</p>
                 </div>
                 <div class="partner-logo fade-in">
-                    <i class="fas fa-building"></i>
+                    <i class="fas fa-building" aria-hidden="true"></i>
                     <p>Entreprises Privées</p>
                 </div>
                 <div class="partner-logo fade-in">
-                    <i class="fas fa-hands-helping"></i>
+                    <i class="fas fa-hands-helping" aria-hidden="true"></i>
                     <p>Organisations Internationales</p>
                 </div>
             </div>
@@ -353,25 +388,25 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta">
+    <section class="cta" aria-labelledby="cta-heading">
         <div class="container">
             <div class="cta-content fade-in">
-                <h2>Prêt à Démarrer Votre Projet Digital ?</h2>
+                <h2 id="cta-heading">Prêt à Démarrer Votre Projet Digital ?</h2>
                 <p>Rejoignez les leaders qui nous font confiance pour leur transformation numérique en Afrique</p>
                 <div class="cta-btns">
-                    <a href="contact.html" class="btn btn-primary">Demander un appel conseil</a>
+                    <a href="mailto:kolongadigitalafrica@gmail.com?cc=rudennaggai@gmail.com,dexter.omono@gmail.com&subject=Demande%20d'appel%20conseil%20-%20Projet%20digital&body=Bonjour%20Kolonga%20Digital%20Africa,%0A%0AJe%20souhaite%20planifier%20un%20appel%20conseil%20pour%20discuter%20de%20mon%20projet%20digital.%0A%0AObjet%20de%20l'appel%20:%0A-%0A%20Présentation%20de%20mon%20projet/entreprise%0A-%0A%20Besoins%20en%20solutions%20digitales%0A-%20Discussion%20sur%20les%20modalités%20de%20collaboration%0A-%0A%0A[Ajoutez%20vos%20informations%20de%20contact%20:%20Nom%20de%20l'entreprise/organisation,%20Nom%20complet%20du%20référent,%20adresse,%20téléphone,%20etc.]" class="btn btn-primary">Demander un appel conseil</a>
                 </div>
                 <div class="cta-features">
                     <div class="feature">
-                        <i class="fas fa-check"></i>
+                        <i class="fas fa-check" aria-hidden="true"></i>
                         <span>Devis gratuit sous 24h</span>
                     </div>
                     <div class="feature">
-                        <i class="fas fa-check"></i>
+                        <i class="fas fa-check" aria-hidden="true"></i>
                         <span>Accompagnement sur mesure</span>
                     </div>
                     <div class="feature">
-                        <i class="fas fa-check"></i>
+                        <i class="fas fa-check" aria-hidden="true"></i>
                         <span>Solutions adaptées à votre budget</span>
                     </div>
                 </div>
@@ -387,10 +422,10 @@
                     <h3>Kolonga Digital Africa</h3>
                     <p>Votre partenaire stratégique pour la souveraineté numérique et l'intelligence artificielle en Afrique.</p>
                     <div class="social-links">
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
                     </div>
                 </div>
                 <div class="footer-col">
@@ -416,17 +451,24 @@
                 </div>
                 <div class="footer-col">
                     <h3>Contact</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Brazzaville, République du Congo</p>
-                    <p><i class="fas fa-envelope"></i> contact@kolonga-digital.africa</p>
-                    <p><i class="fas fa-phone"></i> +242 XX XX XX XX</p>
+                    <p><i class="fas fa-map-marker-alt" aria-hidden="true"></i> 1253, Nko, plateau de 15 ans, Moungali, Brazzaville, République du Congo</p>
+                    <p><i class="fas fa-envelope" aria-hidden="true"></i> kolongadigitalafrica@gmail.com</p>
+                    <p><i class="fas fa-phone" aria-hidden="true"></i> +242 06 117 37 38</p>
                     <div class="newsletter-form">
-                        <input type="email" placeholder="Votre email">
-                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                        <label for="newsletter-email" class="sr-only">Votre email</label>
+                        <input type="email" id="newsletter-email" placeholder="Votre email" required>
+                        <button type="submit" aria-label="S'abonner à la newsletter">
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2023 Kolonga Digital Africa. Tous droits réservés.</p>
+                <div class="footer-links">
+                    <a href="privacy.html">Politique de confidentialité</a>
+                    <a href="terms.html">Conditions d'utilisation</a>
+                </div>
             </div>
         </div>
     </footer>
